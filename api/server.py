@@ -5,6 +5,7 @@ Single-user local research tool: state lives in process memory.
 """
 from __future__ import annotations
 
+import os
 import sys
 from dataclasses import asdict, replace
 from pathlib import Path
@@ -73,7 +74,10 @@ from quantpair.validation.walk_forward import (  # noqa: E402
 
 providers.load_env_file()
 app = FastAPI(title="QuantPair API", version="0.1.0")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+# Only the local web app may call the API: it can store provider keys and spend their quota.
+_ORIGINS = os.environ.get("QP_CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
+app.add_middleware(CORSMiddleware, allow_origins=[o.strip() for o in _ORIGINS if o.strip()],
+                   allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 S: dict = {"cfg": ExperimentConfig()}
 
 

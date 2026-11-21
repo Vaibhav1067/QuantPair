@@ -64,7 +64,7 @@ Yahoo needs no key. For keyed history and live quotes, open **Data → Data prov
 - **Alpaca** (free at alpaca.markets): adjusted daily history and real-time last trades (IEX feed on the free plan).
 - **Finnhub** (free at finnhub.io): real-time quotes.
 
-Keys are kept on the API server, shown only masked, and, if "Remember" is ticked, saved to a gitignored `.env` (`ALPACA_API_KEY_ID`, `ALPACA_API_SECRET_KEY`, `FINNHUB_API_KEY`). The **Live** page polls quotes for a watchlist of pairs and shows the live spread, an indicative z-score against the daily-close window, and the signal state.
+Keys are kept on the API server, shown only masked, and, if "Remember" is ticked, saved to a gitignored `.env` (`ALPACA_API_KEY_ID`, `ALPACA_API_SECRET_KEY`, `FINNHUB_API_KEY`). The **Live** page polls quotes for a watchlist of pairs and shows the live spread, an indicative z-score against the daily-close window, and the signal state. The API only accepts browser requests from the local web app (`http://localhost:3000`); set `QP_CORS_ORIGINS` (comma separated) if you serve it elsewhere.
 
 The original Streamlit interface still works: `streamlit run app.py`.
 Open http://localhost:8501. On **Research Overview**, click **Run first analysis**. This downloads data, discovers pairs on the training split and backtests the selected pairs on the validation split.
@@ -85,7 +85,7 @@ Open http://localhost:8501. On **Research Overview**, click **Run first analysis
 python -m pytest -q
 ruff check .
 ```
-The suite contains 54 tests covering data validation, returns, hedge ratios, z-score leakage, half-life, BH correction, discovery-window isolation, signal orientation, hand-computed backtest P&L, costs on both legs, borrow fees, execution lag, capital limits, the equity identity, end-of-test policy, Sharpe edge cases, VaR/ES, walk-forward chronology, future-data invariance, reproducibility, parallel-vs-serial equality, Kalman causality, regime causality, ML label/feature leakage, trend recovery, trend-cointegration detection and trend extrapolation from the fit window only, and the data-provider adapters and live monitor (against mocked HTTP, no keys needed).
+The suite contains 56 tests covering data validation, returns, hedge ratios, z-score leakage, half-life, BH correction, discovery-window isolation, signal orientation, hand-computed backtest P&L, costs on both legs, borrow fees, execution lag, capital limits, the equity identity, end-of-test policy, Sharpe edge cases, VaR/ES, walk-forward chronology, future-data invariance, reproducibility, parallel-vs-serial equality, Kalman causality, regime causality, ML label/feature leakage, trend recovery, trend-cointegration detection and trend extrapolation from the fit window only, and the data-provider adapters and live monitor (against mocked HTTP, no keys needed), plus key-value validation and the CORS allow-list.
 
 ## The mathematics, briefly
 - **Cointegration.** Two prices can each wander like random walks, yet a combination `y − α − βx` (the *spread*) can stay stationary. The **Engle–Granger** test regresses y on x and checks the residual for a unit root. It uses MacKinnon critical values, which account for β having been estimated. A plain ADF test on that same residual is too lenient, so QuantPair shows it only as a descriptive diagnostic.

@@ -87,3 +87,23 @@ def test_live_reading_uses_history_only(prices):
     shocked = live_reading(prices, "Y", "X", py + 10 * r.std, px, cfg, fit)
     assert shocked.z > cfg.entry_z and shocked.signal in ("short spread", "beyond stop")
     assert isinstance(pd.Timestamp(r.history_end), pd.Timestamp)
+
+
+def test_set_keys_rejects_env_injection(keys, tmp_path):
+    with pytest.raises(ValueError):
+        pv.set_keys({"FINNHUB_API_KEY": "abc\nEVIL=1"}, persist=True)
+    assert not (tmp_path / ".env").exists() or "EVIL" not in (tmp_path / ".env").read_text()
+
+
+def test_api_cors_only_allows_local_web_app():
+    from fastapi.testclient import TestClient
+
+    from api.server import app
+
+    c = TestClient(app)
+    def pre(origin):
+        return c.options("/api/providers/keys", headers={"Origin": origin, "Access-Control-Request-Method": "POST"})
+
+    ok, bad = pre("http://localhost:3000"), pre("https://evil.example")
+    assert ok.headers.get("access-control-allow-origin") == "http://localhost:3000"
+    assert "access-control-allow-origin" not in bad.headers

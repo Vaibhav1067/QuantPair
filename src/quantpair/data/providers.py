@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import datetime as dt
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -49,6 +50,8 @@ def set_keys(values: dict[str, str], persist: bool = False, path: Path | None = 
     for k, v in values.items():
         if k not in KEYS:
             raise ValueError(f"Unknown key name: {k}")
+        if not isinstance(v, str) or not re.fullmatch(r"[A-Za-z0-9_\-\.]{0,200}", v.strip()):
+            raise ValueError(f"{k}: keys may only contain letters, digits, - _ .")
         if v:
             os.environ[k] = v.strip()
         else:
